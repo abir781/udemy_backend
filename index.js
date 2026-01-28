@@ -98,7 +98,7 @@ async function run() {
      const result = await usercollection.insertOne({
   username,
   email,
-  role: "client"
+  role: "teacher"
 });
      res.send(result);
       
