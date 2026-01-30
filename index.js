@@ -3,37 +3,17 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
+const crypto = require('crypto');
+
+const secret = crypto.randomBytes(32).toString('hex');
+
+console.log(secret);
 
 app.use(cors());
 app.use(express.json());
 
 
-// const cards = [
-//   {
-//     id: 1,
-//     title: "React for Beginners",
-//     description: "Learn React from scratch with hands-on projects.",
-//     price: 0,
-//     image: "https://via.placeholder.com/300x200",
-//     instructor: "Abir Hasan"
-//   },
-//   {
-//     id: 2,
-//     title: "Node.js & Express",
-//     description: "Build backend APIs using Node.js and Express.",
-//     price: 49,
-//     image: "https://via.placeholder.com/300x200",
-//     instructor: "John Doe"
-//   },
-//   {
-//     id: 3,
-//     title: "MongoDB Mastery",
-//     description: "Understand MongoDB and data modeling deeply.",
-//     price: 29,
-//     image: "https://via.placeholder.com/300x200",
-//     instructor: "Jane Smith"
-//   }
-// ];
+const jwt = require('jsonwebtoken');
 
 
 
@@ -73,6 +53,38 @@ async function run() {
       res.send(course);
       
     })
+
+   app.post('/sendcourse', async (req, res) => {
+  const coursedata = req.body;
+
+  const result = await carccollection.insertOne(coursedata);
+
+  res.send({
+    success: true,
+    insertedId: result.insertedId
+  });
+});
+
+app.post('/gettoken',async(req,res)=>{
+  const {email} = req.body;
+
+  if(!email) return res.status(400).json({message: "Email required"});
+
+  const user = await usercollection.findOne({email});
+
+   if (!user) return res.status(404).json({ message: "User not found" });
+
+   const token = jwt.sign(
+    { userId: user._id, role: user.role},
+    secret,
+    {expiresIn: "7d"}
+   );
+
+   res.json({
+    token,
+    role:user.role
+   });
+});
 
   app.patch("/users/role", async (req, res) => {
   const { email, role } = req.body;
